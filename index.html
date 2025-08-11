@@ -2,113 +2,151 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <title>n8n AI Chat</title>
-    <style>
-body {
-    background: #f9fafb;
-    font-family: 'Segoe UI', sans-serif;
-    padding: 2em;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-h2 {
-    font-size: 1.5em;
-    margin-bottom: 1em;
-}
-textarea {
-    font-family: 'Segoe UI', sans-serif;
-    width: 100%;
-    max-width: 600px;
-    height: 120px;
-    padding: 1em;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5em;
-    font-size: 1em;
-    background: #fff;
-}
-button {
-    margin-top: 0.5em;
-    padding: 0.6em 1.2em;
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 0.5em;
-    font-size: 1em;
-    cursor: pointer;
-}
-button:hover {
-    background-color: #1e40af;
-}
-textarea::placeholder {
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 1em;
-    color: #9ca3af;
-}
+  <meta charset="UTF-8" />
+  <title>AI Chat</title>
+  <style>
+    body {
+      background: #f9fafb;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-#response {
-    font-family: 'Segoe UI', sans-serif;
-    margin-top: 1.5em;
-    white-space: pre-wrap;
-    background: #f3f4f6;
-    padding: 1em;
-    border-radius: 0.5em;
-    max-width: 600px;
-    width: 100%;
-    border: 1px solid #e5e7eb;
-}
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 0.5em;
+    }
 
-    </style>
+    textarea {
+      font-family: 'Segoe UI', sans-serif;
+      width: 100%;
+      max-width: 600px;
+      height: 120px;
+      padding: 1em;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5em;
+      font-size: 1em;
+      background: #fff;
+    }
+
+    button {
+      margin-top: 0.5em;
+      padding: 0.6em 1.2em;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 0.5em;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #1e40af;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1.5em;
+      margin-top: 0.5em;
+    }
+
+
+    textarea::placeholder {
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 1em;
+      color: #9ca3af;
+    }
+
+    .top-right-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #007bff;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .top-right-btn:hover {
+      background-color: #0056b3;
+    }
+
+
+    #response {
+      font-family: 'Segoe UI', sans-serif;
+      margin-top: 1.5em;
+      white-space: pre-wrap;
+      background: #f3f4f6;
+      padding: 1em;
+      border-radius: 0.5em;
+      max-width: 800px;
+      width: 100%;
+      border: 1px solid #e5e7eb;
+    }
+  </style>
 </head>
 
 <body>
-    <h2>Ask AI</h2>
-    <textarea id="query" placeholder="Type your question here..."></textarea>
-    <br />
-    <button id="sendBtn">Send</button>
-    <div id="response"></div>
+  <a href="https://autobizz.github.io/Agent-chat-history-UI/" target="_blank" class="top-right-btn">Visit Chat
+    History</a>
+  <h1>Ask AI</h1>
+  <textarea id="query" placeholder="Type your question here..."></textarea>
+  <br />
+  <div class="button-group">
+    <button id="sendBtn">Ask Question</button>
+    <button id="clearBtn">Clear Prompt</button>
+  </div>
 
-    <script>
-        const webhookUrl = 'https://theranordic.app.n8n.cloud/webhook/6376bfe6-2fe7-42b8-9f1d-82689ccbddeb/chat';
+  <div id="response"></div>
 
-        document.getElementById('sendBtn').onclick = async () => {
-            const query = document.getElementById('query').value.trim();
-            if (!query) return alert('Please enter a question.');
+  <script>
+    const webhookUrl = 'https://theranordic.app.n8n.cloud/webhook/6376bfe6-2fe7-42b8-9f1d-82689ccbddeb/chat';
 
-            document.getElementById('response').textContent = 'Loading...';
-            document.getElementById('query').value = '';
+    document.getElementById('clearBtn').onclick = () => {
+      document.getElementById('query').value = '';
+    }
+
+    document.getElementById('sendBtn').onclick = async () => {
+      const query = document.getElementById('query').value.trim();
+      if (!query) return alert('Please enter a question.');
+
+      document.getElementById('response').textContent = 'Loading...';
 
 
-            try {
+      try {
 
 
-                let sessionId = localStorage.getItem('sessionId');
-                if (!sessionId) {
-                    sessionId = 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-                    localStorage.setItem('sessionId', sessionId);
-                }
+        let sessionId = localStorage.getItem('sessionId');
+        if (!sessionId) {
+          sessionId = 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+          localStorage.setItem('sessionId', sessionId);
+        }
 
-                const res = await fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: query,
-                        sessionId: sessionId
-                    })
-                });
-                if (!res.ok) throw new Error('Network error');
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: query,
+            sessionId: sessionId
+          })
+        });
+        if (!res.ok) throw new Error('Network error');
 
-                const data = await res.json();
-                const reply = data.response[0].output || data.text || JSON.stringify(data);
+        const data = await res.json();
+        const reply = data.response[0].output || data.text || JSON.stringify(data);
 
-                document.getElementById('response').textContent = typeof reply === 'object' ? JSON.stringify(reply, null, 2) : reply;
+        document.getElementById('response').textContent = typeof reply === 'object' ? JSON.stringify(reply, null, 2) : reply;
 
-            } catch (err) {
-                document.getElementById('response').textContent = 'Error: ' + err.message;
-            }
-        };
-    </script>
+      } catch (err) {
+        document.getElementById('response').textContent = 'Error: ' + err.message;
+      }
+    };
+  </script>
 </body>
 
 </html>
